@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Record Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body { font-family: Arial; padding:20px; background:#f5f5f5; }
+.container { max-width:900px; margin:auto; background:white; padding:20px; border-radius:10px; }
+table { width:100%; border-collapse: collapse; margin-top:15px; }
+th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+th { background:#eee; }
+.box { margin-top:20px; padding:15px; background:#fafafa; border-radius:8px; text-align:center; }
+button { padding:8px 15px; margin-top:10px; cursor:pointer; }
+.hidden { display:none; }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>Last 7 Days Preview</h2>
+<table id="previewTable">
+<thead>
+<tr><th>Cash</th><th>Online</th><th>Total</th><th>Date</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<div class="box">
+<h3>This Month</h3>
+<p>Total Cash: <span id="mCash">0</span></p>
+<p>Total Online: <span id="mOnline">0</span></p>
+<p>Grand Total: <span id="mTotal">0</span></p>
+</div>
+
+<button onclick="toggleAll()">All Record (Show/Hide)</button>
+
+<div id="allSection" class="hidden">
+<h3>All Records (Month-wise)</h3>
+<div id="allRecords"></div>
+</div>
+
+<button onclick="goBack()">Back</button>
+
+</div>
+
+<script>
+const records = JSON.parse(localStorage.getItem("records")) || [];
+
+// ===== Last 7 Days Preview =====
+const today = new Date();
+const last7 = new Date();
+last7.setDate(today.getDate() - 7);
+
+const previewBody = document.querySelector("#previewTable tbody");
+
+records.forEach(r => {
+  const rDate = new Date(r.date);
+  if(rDate >= last7 && rDate <= today){
+    previewBody.innerHTML += `
+      <tr>
+        <td>${r.cash}</td>
+        <td>${r.online}</td>
+        <td>${r.total}</td>
+        <td>${r.date}</td>
+      </tr>`;
+  }
+});
+
+// ===== This Month Summary =====
+let mCash=0, mOnline=0;
+const currentMonth = today.getMonth();
+const currentYear = today.getFullYear();
+
+records.forEach(r => {
+  const d = new Date(r.date);
+  if(d.getMonth() === currentMonth && d.getFullYear() === currentYear){
+    mCash += r.cash;
+    mOnline += r.online;
+  }
+});
+
+document.getElementById("mCash").innerText = mCash;
+document.getElementById("mOnline").innerText = mOnline;
+document.getElementById("mTotal").innerText = mCash + mOnline;
+
+// ===== All Records Month-wise =====
+const grouped = {};
+records.forEach(r => {
+  const d = new Date(r.date);
+  const key = ${d.getFullYear()}-${d.getMonth()+1};
+
+  if(!grouped[key]) grouped[key] = [];
+  grouped[key].push(r);
+});
+
+const allDiv = document.getElementById("allRecords");
+
+for(let key in grouped){
+  let html = <h4>${key}</h4><table><tr><th>Cash</th><th>Online</th><th>Total</th><th>Date</th></tr>;
+
+  grouped[key].forEach(r => {
+    html += <tr><td>${r.cash}</td><td>${r.online}</td><td>${r.total}</td><td>${r.date}</td></tr>;
+  });
+
+  html += "</table>";
+  allDiv.innerHTML += html;
+}
+
+// ===== Toggle =====
+function toggleAll(){
+  const sec = document.getElementById("allSection");
+  sec.classList.toggle("hidden");
+}
+
+function goBack(){
+  window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
