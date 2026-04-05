@@ -2,45 +2,74 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Record Report</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report</title>
 
 <style>
-body { font-family: Arial; padding:20px; background:#f5f5f5; }
-.container { max-width:900px; margin:auto; background:white; padding:20px; border-radius:10px; }
-table { width:100%; border-collapse: collapse; margin-top:15px; }
+body { margin:0; font-family:Arial; background:#eaeaea; }
+.container { padding:20px; }
+h2 { background: green; color:white; padding:15px; margin:0 -20px 20px -20px; text-align:center; }
+
+table { width:100%; border-collapse: collapse; }
 th, td { border:1px solid #ccc; padding:8px; text-align:center; }
-th { background:#eee; }
-.box { margin-top:20px; padding:15px; background:#fafafa; border-radius:8px; text-align:center; }
-button { padding:8px 15px; margin-top:10px; cursor:pointer; }
+
+.wrapper { overflow-x:auto; }
+
+.box { margin-top:20px; padding:15px; background:#fff; border-radius:8px; }
+
+.category { margin-top:20px; padding:15px; background:#fff; border-radius:8px; }
+
+button {
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  background:green;
+  color:white;
+  border:none;
+  border-radius:6px;
+}
+
 .hidden { display:none; }
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
-<h2>Last 7 Days Preview</h2>
-<table id="previewTable">
+<h2>Report</h2>
+
+<h3>Last 7 Days</h3>
+<div class="wrapper">
+<table id="preview">
 <thead>
 <tr><th>Cash</th><th>Online</th><th>Total</th><th>Date</th></tr>
 </thead>
 <tbody></tbody>
 </table>
+</div>
 
 <div class="box">
 <h3>This Month</h3>
-<p>Total Cash: <span id="mCash">0</span></p>
-<p>Total Online: <span id="mOnline">0</span></p>
-<p>Grand Total: <span id="mTotal">0</span></p>
+<p>Cash: <span id="mcash">0</span></p>
+<p>Online: <span id="monline">0</span></p>
+<p>Total: <span id="mtotal">0</span></p>
 </div>
 
-<button onclick="toggleAll()">All Record (Show/Hide)</button>
-
-<div id="allSection" class="hidden">
-<h3>All Records (Month-wise)</h3>
-<div id="allRecords"></div>
+<!-- ✅ Categories Section Added -->
+<div class="category">
+<h3>Auto Categories</h3>
+<p>Petrol: <span id="petrol">0</span></p>
+<p>Loan: <span id="loan">0</span></p>
+<p>Maintain: <span id="maintain">0</span></p>
+<p>Renewal: <span id="renewal">0</span></p>
+<p>Expense: <span id="exp">0</span></p>
+<p>Saving: <span id="saving">0</span></p>
 </div>
+
+<button onclick="toggleAll()">All Record</button>
+
+<div id="all" class="hidden"></div>
 
 <button onclick="goBack()">Back</button>
 
@@ -49,76 +78,83 @@ button { padding:8px 15px; margin-top:10px; cursor:pointer; }
 <script>
 const records = JSON.parse(localStorage.getItem("records")) || [];
 
-// ===== Last 7 Days Preview =====
 const today = new Date();
 const last7 = new Date();
 last7.setDate(today.getDate() - 7);
 
-const previewBody = document.querySelector("#previewTable tbody");
-
-records.forEach(r => {
-  const rDate = new Date(r.date);
-  if(rDate >= last7 && rDate <= today){
-    previewBody.innerHTML += `
-      <tr>
-        <td>${r.cash}</td>
-        <td>${r.online}</td>
-        <td>${r.total}</td>
-        <td>${r.date}</td>
-      </tr>`;
-  }
-});
-
-// ===== This Month Summary =====
-let mCash=0, mOnline=0;
-const currentMonth = today.getMonth();
-const currentYear = today.getFullYear();
+// ===== Last 7 days =====
+const preview = document.querySelector("#preview tbody");
 
 records.forEach(r => {
   const d = new Date(r.date);
-  if(d.getMonth() === currentMonth && d.getFullYear() === currentYear){
-    mCash += r.cash;
-    mOnline += r.online;
+  if (d >= last7 && d <= today) {
+    preview.innerHTML += `<tr>
+      <td>${r.cash}</td>
+      <td>${r.online}</td>
+      <td>${r.total}</td>
+      <td>${r.date}</td>
+    </tr>`;
   }
 });
 
-document.getElementById("mCash").innerText = mCash;
-document.getElementById("mOnline").innerText = mOnline;
-document.getElementById("mTotal").innerText = mCash + mOnline;
+// ===== This Month =====
+let mc=0, mo=0;
+
+records.forEach(r => {
+  const d = new Date(r.date);
+  if (d.getMonth()===today.getMonth() && d.getFullYear()===today.getFullYear()) {
+    mc += r.cash;
+    mo += r.online;
+  }
+});
+
+const mtotal = mc + mo;
+
+document.getElementById("mcash").innerText = mc;
+document.getElementById("monline").innerText = mo;
+document.getElementById("mtotal").innerText = mtotal;
+
+// ===== Categories Calculation (from This Month Total) =====
+document.getElementById("petrol").innerText = (mtotal * 0.25).toFixed(2);
+document.getElementById("loan").innerText = (mtotal * 0.30).toFixed(2);
+document.getElementById("maintain").innerText = (mtotal * 0.08).toFixed(2);
+document.getElementById("renewal").innerText = (mtotal * 0.05).toFixed(2);
+document.getElementById("exp").innerText = (mtotal * 0.10).toFixed(2);
+document.getElementById("saving").innerText = (mtotal * 0.22).toFixed(2);
 
 // ===== All Records Month-wise =====
 const grouped = {};
 records.forEach(r => {
   const d = new Date(r.date);
-  const key = ${d.getFullYear()}-${d.getMonth()+1};
-
-  if(!grouped[key]) grouped[key] = [];
+  const key = d.toLocaleString('default',{month:'long',year:'numeric'});
+  if (!grouped[key]) grouped[key]=[];
   grouped[key].push(r);
 });
 
-const allDiv = document.getElementById("allRecords");
+const allDiv = document.getElementById("all");
 
-for(let key in grouped){
-  let html = <h4>${key}</h4><table><tr><th>Cash</th><th>Online</th><th>Total</th><th>Date</th></tr>;
+for (let key in grouped) {
+  let html = `<div class="box"><h3>${key}</h3><div class="wrapper"><table>
+  <tr><th>Cash</th><th>Online</th><th>Total</th><th>Date</th></tr>`;
 
-  grouped[key].forEach(r => {
-    html += <tr><td>${r.cash}</td><td>${r.online}</td><td>${r.total}</td><td>${r.date}</td></tr>;
+  grouped[key].forEach(r=>{
+    html += `<tr>
+      <td>${r.cash}</td>
+      <td>${r.online}</td>
+      <td>${r.total}</td>
+      <td>${r.date}</td>
+    </tr>`;
   });
 
-  html += "</table>";
+  html += "</table></div></div>";
   allDiv.innerHTML += html;
 }
 
-// ===== Toggle =====
 function toggleAll(){
-  const sec = document.getElementById("allSection");
-  sec.classList.toggle("hidden");
+  all.classList.toggle("hidden");
 }
 
 function goBack(){
-  window.location.href = "index.html";
+  window.history.back();
 }
 </script>
-
-</body>
-</html>
