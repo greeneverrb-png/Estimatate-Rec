@@ -1,113 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Estimate Record</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estimate Record</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f5f5f5;
-    }
+<link rel="manifest" href="manifest.json">
 
-    .container {
-      max-width: 400px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #eaeaea;
+}
 
-    h2 {
-      text-align: center;
-    }
+.container {
+  padding: 20px;
+}
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
+h2 {
+  background: green;
+  color: white;
+  padding: 15px;
+  margin: 0 -20px 20px -20px;
+  text-align: center;
+}
 
-    button {
-      width: 100%;
-      padding: 12px;
-      background: green;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-    }
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
 
-    button:hover {
-      background: darkgreen;
-    }
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 16px;
+  background: green;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
 
-    .show-btn {
-      margin-top: 10px;
-      background: #333;
-    }
-  </style>
+button:active {
+  transform: scale(0.97);
+}
+
+.show-btn {
+  background: #333;
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>Estimate Record</h2>
+<h2>Estimate Record</h2>
 
-  <input type="number" id="cash" placeholder="Cash Amount">
-  <input type="number" id="online" placeholder="Online Amount">
-  <input type="date" id="date">
+<input type="number" inputmode="numeric" id="cash" placeholder="Cash">
+<input type="number" inputmode="numeric" id="online" placeholder="Online">
+<input type="date" id="date">
 
-  <button onclick="addRecord()">ENTER</button>
-  <button class="show-btn" onclick="showRecords()">SHOW RECORD</button>
+<button onclick="addRecord()">ENTER</button>
+<button class="show-btn" onclick="goRecord()">SHOW RECORD</button>
 </div>
 
 <script>
-  // ✅ Auto fill today's date
-  window.onload = function () {
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0];
-    document.getElementById("date").value = formattedDate;
-  };
+// ✅ Correct Nepal date
+window.onload = function () {
+  const today = new Date().toLocaleDateString('en-CA');
+  document.getElementById("date").value = today;
+};
 
-  function addRecord() {
-    const cash = Number(document.getElementById("cash").value) || 0;
-    const online = Number(document.getElementById("online").value) || 0;
-    const date = document.getElementById("date").value;
+function addRecord() {
+  const cash = Number(document.getElementById("cash").value) || 0;
+  const online = Number(document.getElementById("online").value) || 0;
+  const date = document.getElementById("date").value;
 
-    const total = cash + online;
-
-    const record = {
-      cash,
-      online,
-      total,
-      date
-    };
-
-    let records = JSON.parse(localStorage.getItem("records")) || [];
-    records.push(record);
-
-    localStorage.setItem("records", JSON.stringify(records));
-
-    alert("Record Saved!");
-
-    // clear fields but keep today's date again
-    document.getElementById("cash").value = "";
-    document.getElementById("online").value = "";
-
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById("date").value = today;
+  if (!date) {
+    alert("Please select date");
+    return;
   }
 
-  function showRecords() {
-    window.location.href = "record.html";
-  }
+  const total = cash + online;
+
+  const record = { cash, online, total, date };
+
+  let records = JSON.parse(localStorage.getItem("records")) || [];
+  records.push(record);
+
+  localStorage.setItem("records", JSON.stringify(records));
+
+  alert("Saved!");
+
+  document.getElementById("cash").value = "";
+  document.getElementById("online").value = "";
+
+  document.getElementById("date").value =
+    new Date().toLocaleDateString('en-CA');
+}
+
+function goRecord() {
+  window.location.href = "record.html";
+}
 </script>
 
 </body>
