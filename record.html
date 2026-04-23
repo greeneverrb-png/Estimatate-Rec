@@ -24,19 +24,29 @@ th, td { border:1px solid #ccc; padding:8px; text-align:center; }
   margin:5px 0;
 }
 
-button {
-  padding:6px 10px;
-  background:green;
-  color:white;
+/* default button (blank look) */
+.usebtn {
+  width:25px;
+  height:25px;
+  background:#ccc;
   border:none;
-  border-radius:6px;
+  border-radius:5px;
   cursor:pointer;
+}
+
+/* active after click */
+.active {
+  background:green;
 }
 
 .fullbtn {
   width:100%;
   margin-top:10px;
   padding:10px;
+  background:green;
+  color:white;
+  border:none;
+  border-radius:6px;
 }
 
 .hidden { display:none; }
@@ -66,20 +76,19 @@ button {
 <p>Total: <span id="mtotal">0</span></p>
 </div>
 
-<!-- ✅ Categories -->
+<!-- Categories -->
 <div class="category">
 <h3>Auto Categories</h3>
 
-<div class="row">Petrol: <span id="petrol">0</span> <button onclick="useAmount('petrol')">Use</button></div>
-<div class="row">Loan: <span id="loan">0</span> <button onclick="useAmount('loan')">Use</button></div>
-<div class="row">Maintain: <span id="maintain">0</span> <button onclick="useAmount('maintain')">Use</button></div>
-<div class="row">Renewal: <span id="renewal">0</span> <button onclick="useAmount('renewal')">Use</button></div>
-<div class="row">Expense: <span id="exp">0</span> <button onclick="useAmount('exp')">Use</button></div>
-<div class="row">Saving: <span id="saving">0</span> <button onclick="useAmount('saving')">Use</button></div>
+<div class="row">Petrol: <span id="petrol">0</span> <button class="usebtn" onclick="useAmount(this,'petrol')"></button></div>
+<div class="row">Loan: <span id="loan">0</span> <button class="usebtn" onclick="useAmount(this,'loan')"></button></div>
+<div class="row">Maintain: <span id="maintain">0</span> <button class="usebtn" onclick="useAmount(this,'maintain')"></button></div>
+<div class="row">Renewal: <span id="renewal">0</span> <button class="usebtn" onclick="useAmount(this,'renewal')"></button></div>
+<div class="row">Expense: <span id="exp">0</span> <button class="usebtn" onclick="useAmount(this,'exp')"></button></div>
+<div class="row">Saving: <span id="saving">0</span> <button class="usebtn" onclick="useAmount(this,'saving')"></button></div>
 
 <hr>
 
-<!-- ✅ Remaining Added -->
 <div class="row"><strong>Remaining:</strong> <span id="remaining">0</span></div>
 
 </div>
@@ -144,6 +153,9 @@ const categoryPercent = {
 
 let remaining = mtotal;
 
+// track used (to prevent double click subtract)
+let usedMap = {};
+
 for (let key in categoryPercent) {
   const val = (mtotal * categoryPercent[key]).toFixed(2);
   document.getElementById(key).innerText = val;
@@ -151,20 +163,23 @@ for (let key in categoryPercent) {
 
 document.getElementById("remaining").innerText = remaining.toFixed(2);
 
-// ===== Use Button Logic =====
-function useAmount(type){
+// ===== Click Logic =====
+function useAmount(btn,type){
+
+  // prevent double subtraction
+  if(usedMap[type]) return;
+
   const val = Number(document.getElementById(type).innerText);
 
-  if(val <= 0) return;
-
   remaining -= val;
-
-  // set used category to 0
-  document.getElementById(type).innerText = "0";
-
   if(remaining < 0) remaining = 0;
 
   document.getElementById("remaining").innerText = remaining.toFixed(2);
+
+  // mark button green
+  btn.classList.add("active");
+
+  usedMap[type] = true;
 }
 
 // ===== All Records =====
